@@ -1,7 +1,9 @@
 import { PropsWithNavigation } from "@global";
+import { windowWidth } from "@helper/device";
 import { useAppSelector } from "@hook/store";
+import { MPVPlayer, MPVPlayerView } from "@view/MPVPlayer";
 import { StatusBar } from "@view/StatusBar";
-import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 
 const style = StyleSheet.create({
     page: {
@@ -21,7 +23,7 @@ export function Page(props: PropsWithNavigation<"default">) {
                 showsVerticalScrollIndicator={false}
                 style={{flex: 1}}>
                 <View>
-
+                    <MPVPlayerView style={{width: 1440, height: 810}} />
                 </View>
             </ScrollView>
         </SafeAreaView>

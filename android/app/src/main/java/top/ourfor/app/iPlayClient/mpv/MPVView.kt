@@ -1,17 +1,21 @@
 package top.ourfor.app.iPlayClient.mpv
 
 import android.content.Context
-import android.util.AttributeSet
-import android.util.Log
-
-import top.ourfor.lib.mpv.MPVLib.mpvFormat.*
 import android.os.Build
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.view.*
+import android.util.AttributeSet
+import android.util.Log
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.WindowManager
 import top.ourfor.app.iPlayClient.R
 import top.ourfor.lib.mpv.MPVLib
-import kotlin.math.abs
+import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_DOUBLE
+import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_FLAG
+import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_INT64
+import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_NONE
+import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_STRING
 import kotlin.reflect.KProperty
 
 class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attrs), SurfaceHolder.Callback {
@@ -154,24 +158,6 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
         MPVLib.destroy()
     }
 
-    fun onPointerEvent(event: MotionEvent): Boolean {
-        assert (event.isFromSource(InputDevice.SOURCE_CLASS_POINTER))
-        if (event.actionMasked == MotionEvent.ACTION_SCROLL) {
-            val h = event.getAxisValue(MotionEvent.AXIS_HSCROLL)
-            val v = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
-            if (abs(h) > 0)
-                MPVLib.command(arrayOf("keypress", if (h < 0) "WHEEL_LEFT" else "WHEEL_RIGHT"))
-            if (abs(v) > 0)
-                MPVLib.command(arrayOf("keypress", if (v < 0) "WHEEL_DOWN" else "WHEEL_UP"))
-            return true
-        }
-        return false
-    }
-
-    fun onKey(event: KeyEvent): Boolean {
-         return true
-    }
-
     private fun observeProperties() {
         // This observes all properties needed by MPVView, MPVActivity or other classes
         data class Property(val name: String, val format: Int = MPV_FORMAT_NONE)
@@ -263,23 +249,6 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
 
     data class Chapter(val index: Int, val title: String?, val time: Double)
 
-    fun loadChapters(): MutableList<Chapter> {
-        val chapters = mutableListOf<Chapter>()
-        val count = MPVLib.getPropertyInt("chapter-list/count")!!
-        for (i in 0 until count) {
-            val title = MPVLib.getPropertyString("chapter-list/$i/title")
-            val time = MPVLib.getPropertyDouble("chapter-list/$i/time")!!
-            chapters.add(
-                Chapter(
-                    index=i,
-                    title=title,
-                    time=time
-            )
-            )
-        }
-        return chapters
-    }
-
     // Property getters/setters
 
     var paused: Boolean?
@@ -289,16 +258,6 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
     var timePos: Int?
         get() = MPVLib.getPropertyInt("time-pos")
         set(progress) = MPVLib.setPropertyInt("time-pos", progress!!)
-
-    val hwdecActive: String
-        get() = MPVLib.getPropertyString("hwdec-current") ?: "no"
-
-    var playbackSpeed: Double?
-        get() = MPVLib.getPropertyDouble("speed")
-        set(speed) = MPVLib.setPropertyDouble("speed", speed!!)
-
-    val estimatedVfFps: Double?
-        get() = MPVLib.getPropertyDouble("estimated-vf-fps")
 
     val videoAspect: Double?
         get() = MPVLib.getPropertyDouble("video-params/aspect")
@@ -318,23 +277,6 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
     }
 
     var vid: Int by TrackDelegate("vid")
-    var sid: Int by TrackDelegate("sid")
-    var secondarySid: Int by TrackDelegate("secondary-sid")
-    var aid: Int by TrackDelegate("aid")
-
-    // Commands
-
-    fun cyclePause() = MPVLib.command(arrayOf("cycle", "pause"))
-    fun cycleAudio() = MPVLib.command(arrayOf("cycle", "audio"))
-    fun cycleSub() = MPVLib.command(arrayOf("cycle", "sub"))
-    fun cycleHwdec() = MPVLib.command(arrayOf("cycle-values", "hwdec", "auto", "no"))
-
-    fun cycleSpeed() {
-        val speeds = arrayOf(0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0)
-        val currentSpeed = playbackSpeed ?: 1.0
-        val index = speeds.indexOfFirst { it > currentSpeed }
-        playbackSpeed = speeds[if (index == -1) 0 else index]
-    }
 
     fun getRepeat(): Int {
         return when (MPVLib.getPropertyString("loop-playlist") +
@@ -345,30 +287,8 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
         }
     }
 
-    fun cycleRepeat() {
-        val state = getRepeat()
-        when (state) {
-            0, 1 -> {
-                MPVLib.setPropertyString("loop-playlist", if (state == 1) "no" else "inf")
-                MPVLib.setPropertyString("loop-file", if (state == 1) "inf" else "no")
-            }
-            2 -> MPVLib.setPropertyString("loop-file", "no")
-        }
-    }
-
     fun getShuffle(): Boolean {
         return MPVLib.getPropertyBoolean("shuffle")
-    }
-
-    fun changeShuffle(cycle: Boolean, value: Boolean = true) {
-        // Use the 'shuffle' property to store the shuffled state, since changing
-        // it at runtime doesn't do anything.
-        val state = getShuffle()
-        val newState = if (cycle) state.xor(value) else value
-        if (state == newState)
-            return
-        MPVLib.command(arrayOf(if (newState) "playlist-shuffle" else "playlist-unshuffle"))
-        MPVLib.setPropertyBoolean("shuffle", newState)
     }
 
     // Surface callbacks
@@ -383,6 +303,7 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
         // This forces mpv to render subs/osd/whatever into our surface even if it would ordinarily not
         MPVLib.setOptionString("force-window", "yes")
 
+        Log.d(TAG, filePath ?: "")
         if (filePath != null) {
             MPVLib.command(arrayOf("loadfile", filePath as String))
             filePath = null
