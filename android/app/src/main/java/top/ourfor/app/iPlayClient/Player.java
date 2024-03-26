@@ -12,5 +12,6 @@ public interface Player {
     default void pause() {}
     default void seek(double timeInSeconds) {}
     default void stop() {}
+    default void resize(String newSize) {}
     default void destroy() {}
 }

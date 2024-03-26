@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import top.ourfor.app.iPlayClient.databinding.Player2Binding
+import top.ourfor.app.iPlayClient.databinding.PlayerBinding
 
 
 @SuppressLint("ResourceType")
@@ -16,7 +17,7 @@ class PlayerView(
     init {
         setBackgroundColor(Color.BLUE)
 
-        val binding = Player2Binding.inflate(LayoutInflater.from(context))
+        val binding = PlayerBinding.inflate(LayoutInflater.from(context))
         val player = binding.player
         val contentLayoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         contentLayoutParams.topToTop = LayoutParams.PARENT_ID;
@@ -26,9 +27,9 @@ class PlayerView(
         addView(binding.root, contentLayoutParams)
 
         player.initialize(context.filesDir.path, context.cacheDir.path)
-        if (url != null) player.playFile(url)
         val viewModel = player.viewModel
-
+        if (url != null) player.playFile(url)
+        (viewModel as PlayerViewModel).url = url;
 
         val controlView = PlayerControlView(context)
         val controlLayoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)

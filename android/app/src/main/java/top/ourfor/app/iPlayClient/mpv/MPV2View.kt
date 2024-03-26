@@ -26,56 +26,21 @@ class MPV2View(context: Context, attrs: AttributeSet) : SurfaceView(context, att
     fun initialize(configDir: String, cacheDir: String) {
         viewModel = PlayerViewModel()
         holder.addCallback(this)
-        observeProperties()
     }
-
-    private var voInUse: String = ""
 
     private var filePath: String? = null
 
-    fun playFile(url: String) {
-        viewModel.loadVideo(url)
-    }
     // Called when back button is pressed, or app is shutting down
     fun destroy() {
         holder.removeCallback(this)
         MPVLib.destroy()
     }
 
-    private fun observeProperties() {
-        // This observes all properties needed by MPVView, MPVActivity or other classes
-        data class Property(val name: String, val format: Int = MPV_FORMAT_NONE)
-        val p = arrayOf(
-            Property("time-pos", MPV_FORMAT_INT64),
-            Property("duration", MPV_FORMAT_INT64),
-            Property("pause", MPV_FORMAT_FLAG),
-            Property("paused-for-cache", MPV_FORMAT_FLAG),
-            Property("track-list"),
-            // observing double properties is not hooked up in the JNI code, but doing this
-            // will restrict updates to when it actually changes
-            Property("video-params/aspect", MPV_FORMAT_DOUBLE),
-            //
-            Property("playlist-pos", MPV_FORMAT_INT64),
-            Property("playlist-count", MPV_FORMAT_INT64),
-            Property("video-format"),
-            Property("media-title", MPV_FORMAT_STRING),
-            Property("metadata/by-key/Artist", MPV_FORMAT_STRING),
-            Property("metadata/by-key/Album", MPV_FORMAT_STRING),
-            Property("loop-playlist"),
-            Property("loop-file"),
-            Property("shuffle", MPV_FORMAT_FLAG),
-            Property("hwdec-current")
-        )
-
-        for ((name, format) in p)
-            MPVLib.observeProperty(name, format)
-    }
-
 
     // Surface callbacks
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-//        MPVLib.setPropertyString("android-surface-size", "${width}x$height")
+        viewModel.resize("${width}x$height")
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
@@ -83,10 +48,12 @@ class MPV2View(context: Context, attrs: AttributeSet) : SurfaceView(context, att
         viewModel.attach(holder)
         if (filePath != null) {
             viewModel.loadVideo(filePath)
+            viewModel.play()
             filePath = null
         } else {
             // We disable video output when the context disappears, enable it back
 //            MPVLib.setPropertyString("vo", voInUse)
+
         }
     }
 
@@ -96,6 +63,6 @@ class MPV2View(context: Context, attrs: AttributeSet) : SurfaceView(context, att
     }
 
     companion object {
-        private const val TAG = "mpv"
+        private const val TAG = "MPV2View"
     }
 }

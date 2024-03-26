@@ -14,7 +14,7 @@ const style = StyleSheet.create({
 
 export function Page(props: PropsWithNavigation<"default">) {
     const backgroundColor = useAppSelector(state => state.theme.backgroundColor);
-    const url = "https://drive.endemy.me/source/blog/about/Stranger-Things.m4v"
+    const url = "https://drive.endemy.me/iplay/h265.mp4"
     return (
         <SafeAreaView style={{...style.page, backgroundColor}}>
             <StatusBar />
