@@ -5,17 +5,24 @@ import android.view.SurfaceHolder;
 
 import java.util.List;
 
+import top.ourfor.lib.mpv.MPV;
 import top.ourfor.lib.mpv.MPVLib;
 
 public class PlayerViewModel implements Player {
+    private MPV mpv;
+    public PlayerViewModel() {
+        mpv = new MPV();
+        mpv.init();
+    }
     public void attach(SurfaceHolder holder) {
-        MPVLib.attachSurface(holder.getSurface());
-        MPVLib.setOptionString("force-window", "yes");
+        mpv.setDrawable(holder.getSurface());
+//        MPVLib.setOptionString("force-window", "yes");
     }
 
     @Override
     public void loadVideo(String url) {
-        MPVLib.command(new String[]{"loadfile", url});
+//        MPVLib.command(new String[]{"loadfile", url});
+        mpv.command("loadfile", url);
     }
 
     @Override
@@ -25,7 +32,7 @@ public class PlayerViewModel implements Player {
 
     @Override
     public boolean isPlaying() {
-        return !MPVLib.getPropertyBoolean("pause");
+        return mpv.getBoolTypeProperty("pause");
     }
 
     @Override
@@ -40,8 +47,9 @@ public class PlayerViewModel implements Player {
 
     @Override
     public void destroy() {
-        MPVLib.setPropertyString("vo", "null");
-        MPVLib.setOptionString("force-window", "no");
-        MPVLib.detachSurface();
+        mpv.destroy();
+//        MPVLib.setPropertyString("vo", "null");
+//        MPVLib.setOptionString("force-window", "no");
+//        MPVLib.detachSurface();
     }
 }
