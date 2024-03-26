@@ -20,9 +20,17 @@ public class PlayerViewModel implements Player {
 
     @Override
     public void resume() {
-        MPVLib.command(new String[]{
-                ""
-        });
+        MPVLib.setPropertyBoolean("pause", false);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return !MPVLib.getPropertyBoolean("pause");
+    }
+
+    @Override
+    public void pause() {
+        MPVLib.setPropertyBoolean("pause", true);
     }
 
     @Override

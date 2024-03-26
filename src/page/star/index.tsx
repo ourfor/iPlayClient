@@ -14,6 +14,7 @@ const style = StyleSheet.create({
 
 export function Page(props: PropsWithNavigation<"default">) {
     const backgroundColor = useAppSelector(state => state.theme.backgroundColor);
+    const url = "https://drive.endemy.me/source/blog/about/Stranger-Things.m4v"
     return (
         <SafeAreaView style={{...style.page, backgroundColor}}>
             <StatusBar />
@@ -24,7 +25,7 @@ export function Page(props: PropsWithNavigation<"default">) {
                 style={{flex: 1}}>
                 <View>
                     <MPVPlayerView style={{width: 1440, height: 810}}
-                        url="https://drive.endemy.me/iplay/demo.mp4"
+                        url={url}
                      />
                 </View>
             </ScrollView>

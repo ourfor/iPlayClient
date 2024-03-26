@@ -30,6 +30,7 @@ class PlayerView(
 
         if (url != null) player.playFile(url)
         player.initialize(context.filesDir.path, context.cacheDir.path)
+        val viewModel = player.viewModel
 
 
         val controlView = PlayerControlView(context)
@@ -38,6 +39,7 @@ class PlayerView(
         controlLayoutParams.bottomToBottom = LayoutParams.PARENT_ID;
         controlLayoutParams.leftToLeft = LayoutParams.PARENT_ID;
         controlLayoutParams.rightToRight = LayoutParams.PARENT_ID;
+        controlView.player = viewModel
         addView(controlView, controlLayoutParams)
     }
 }
