@@ -6,8 +6,9 @@ import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.slider.Slider
 
 class PlayerControlView(context: Context) : ConstraintLayout(context) {
     var player: Player? = null
@@ -60,13 +61,15 @@ class PlayerControlView(context: Context) : ConstraintLayout(context) {
     }
 
     private var progressBar = run {
-        val slide = Slider(context)
+        val slide = SeekBar(context)
+        slide.max = 9999
         slide
     }
 
     private var progressBarLayout = run {
         val params = LayoutParams(LayoutParams.MATCH_PARENT, 20)
         params.bottomToBottom = LayoutParams.PARENT_ID
+        params.bottomMargin = 20
         params.leftToLeft = LayoutParams.PARENT_ID
         params.rightToRight = LayoutParams.PARENT_ID
         params
@@ -96,6 +99,20 @@ class PlayerControlView(context: Context) : ConstraintLayout(context) {
                 player?.resume()
             }
         }
+        progressBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                // 这里处理滑块值改变的事件
+                // progress参数表示当前的滑块值
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+                // 这里处理开始滑动的事件
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                Log.d(TAG, "seek bar value ${seekBar.progress}")
+            }
+        })
 
     }
 
