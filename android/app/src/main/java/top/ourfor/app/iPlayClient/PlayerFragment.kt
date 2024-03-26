@@ -10,14 +10,16 @@ import androidx.fragment.app.Fragment
 import top.ourfor.app.iPlayClient.databinding.PlayerBinding
 import top.ourfor.app.iPlayClient.mpv.MPVView
 
-class PlayerFragment : Fragment() {
+class PlayerFragment (
+    var url: String?
+) : Fragment() {
     private lateinit var playerView: PlayerView
     private lateinit var binding: PlayerBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         binding = PlayerBinding.inflate(inflater)
-        playerView = PlayerView(requireNotNull(context))
+        playerView = PlayerView(requireNotNull(context), url)
         return playerView // this CustomView could be any view that you want to render
     }
 

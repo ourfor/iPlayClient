@@ -23,7 +23,9 @@ export function Page(props: PropsWithNavigation<"default">) {
                 showsVerticalScrollIndicator={false}
                 style={{flex: 1}}>
                 <View>
-                    <MPVPlayerView style={{width: 1440, height: 810}} />
+                    <MPVPlayerView style={{width: 1440, height: 810}}
+                        url="https://drive.endemy.me/iplay/demo.mp4"
+                     />
                 </View>
             </ScrollView>
         </SafeAreaView>

@@ -12,7 +12,10 @@ import top.ourfor.app.iPlayClient.mpv.MPVView
 
 
 @SuppressLint("ResourceType")
-class PlayerView(context: Context) : ConstraintLayout(context) {
+class PlayerView(
+    context: Context,
+    url: String?
+) : ConstraintLayout(context) {
     init {
         setBackgroundColor(Color.BLUE)
 
@@ -25,7 +28,7 @@ class PlayerView(context: Context) : ConstraintLayout(context) {
         contentLayoutParams.rightToRight = LayoutParams.PARENT_ID;
         addView(binding.root, contentLayoutParams)
 
-        player.playFile("https://drive.endemy.me/iplay/demo.mp4")
+        if (url != null) player.playFile(url)
         player.initialize(context.filesDir.path, context.cacheDir.path)
 
 

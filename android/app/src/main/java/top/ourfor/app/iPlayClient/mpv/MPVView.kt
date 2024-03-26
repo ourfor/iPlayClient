@@ -9,6 +9,8 @@ import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.WindowManager
+import top.ourfor.app.iPlayClient.Player
+import top.ourfor.app.iPlayClient.PlayerViewModel
 import top.ourfor.app.iPlayClient.R
 import top.ourfor.lib.mpv.MPVLib
 import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_DOUBLE
@@ -19,7 +21,9 @@ import top.ourfor.lib.mpv.MPVLib.mpvFormat.MPV_FORMAT_STRING
 import kotlin.reflect.KProperty
 
 class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attrs), SurfaceHolder.Callback {
+    public lateinit var viewModel: Player
     fun initialize(configDir: String, cacheDir: String) {
+        viewModel = PlayerViewModel()
         MPVLib.create(this.context)
         MPVLib.setOptionString("config", "yes")
         MPVLib.setOptionString("config-dir", configDir)
@@ -299,13 +303,9 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.w(TAG, "attaching surface")
-        MPVLib.attachSurface(holder.surface)
-        // This forces mpv to render subs/osd/whatever into our surface even if it would ordinarily not
-        MPVLib.setOptionString("force-window", "yes")
-
-        Log.d(TAG, filePath ?: "")
+        viewModel.attach(holder)
         if (filePath != null) {
-            MPVLib.command(arrayOf("loadfile", filePath as String))
+            viewModel.loadVideo(filePath)
             filePath = null
         } else {
             // We disable video output when the context disappears, enable it back
@@ -315,9 +315,7 @@ class MPVView(context: Context, attrs: AttributeSet) : SurfaceView(context, attr
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         Log.w(TAG, "detaching surface")
-        MPVLib.setPropertyString("vo", "null")
-        MPVLib.setOptionString("force-window", "no")
-        MPVLib.detachSurface()
+        viewModel.destroy();
     }
 
     companion object {
