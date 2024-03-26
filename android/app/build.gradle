@@ -109,6 +109,11 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName project.hasProperty('versionName') ? project.getProperty('versionName') : "1.0"
+        externalNativeBuild {
+            cmake {
+                cppFlags ''
+            }
+        }
     }
     signingConfigs {
         debug {
@@ -133,6 +138,12 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.22.1'
         }
     }
 }
