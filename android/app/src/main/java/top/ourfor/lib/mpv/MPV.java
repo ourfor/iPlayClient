@@ -10,8 +10,9 @@ public class MPV {
         }
     }
 
-    public static native void init();
-    public static native boolean getBoolTypeProperty(String name);
+    public native void init();
+    public native void destroy();
+    public native boolean getBoolTypeProperty(String name);
 
     public void Hello() {
         init();

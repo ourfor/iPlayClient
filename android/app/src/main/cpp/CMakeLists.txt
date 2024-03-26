@@ -29,10 +29,19 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
     iPlayClient.cpp)
 
+include_directories(mpv)
+
+find_library(MPV_LIB_PATH
+             mpv
+             PATHS ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}
+             NO_CMAKE_FIND_ROOT_PATH)
+
+
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
     # List libraries link to the target library
     android
-    log)
+    log
+    ${MPV_LIB_PATH})
