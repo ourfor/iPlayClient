@@ -54,7 +54,7 @@ export function MediaCard({media, theme}: {media: Media, theme?: ThemeBasicStyle
     const navigation: Navigation = useNavigation();
     const onPress = (media: Media) => {
         navigation.navigate('movie', {
-            title: Device.isDesktop ? null : media.Name,
+            title: media.Name,
             type: media.Type,
             movie: media,
         } as any);

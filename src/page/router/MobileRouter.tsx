@@ -38,6 +38,7 @@ import { HeaderRightAction } from '../album/HeaerRightAction';
 import { Device, OSType, isOS } from '@helper/device';
 import { NavBar } from '@view/menu/NavBar';
 import NativeTitleBar from '@api/native/windows/NativeTitleBar';
+import { logger } from '@helper/log';
 
 const HomeStack = createNativeStackNavigator();
 const SettingsStack = createNativeStackNavigator();
@@ -246,8 +247,10 @@ const StarRouter = () => {
 function getActiveRouteName(state: NavigationState) {
     const route = state.routes[state.index];
     if (Device.isDesktop) {
-        const titile = (route.params as any)?.title;
-        NativeTitleBar?.setTitle(titile ?? "No title")
+        const title = (route.params as any)?.title;
+        logger.info(`route:`, route)
+        logger.info(`title bar will set title ${title}`)
+        NativeTitleBar?.setTitle(title ?? "No title")
     }
     if (route.state) {
         return getActiveRouteName(route.state as any);

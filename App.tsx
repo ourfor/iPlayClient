@@ -6,7 +6,7 @@ import {restoreSiteAsync} from '@store/embySlice';
 import { Router } from '@page/router';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { PersistGate } from 'redux-persist/integration/react';
-import { Appearance, NativeModules, useColorScheme } from 'react-native';
+import { Appearance, useColorScheme } from 'react-native';
 import { ColorScheme, updateTheme } from '@store/themeSlice';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { logger, printException } from '@helper/log';

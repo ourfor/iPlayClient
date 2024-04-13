@@ -31,23 +31,6 @@ const style = StyleSheet.create({
 })
 
 export function DesktopStatusBar(props: ComponentProps<typeof StatusBarOrigin>) {
-    const navigation = useNavigation()
-    const pageStyle = useAppSelector(selectThemedPageStyle)
-    const [titleBarHeight, setTitleBarHeight] = useState(0)
-    useEffect(() => {
-        NativeTitleBar?.add?.(0, 0, (value) => {
-            logger.info("TitleBarHeight is", value)
-            setTitleBarHeight(value)
-        })
-    }, [])
-    const layout = useMemo(() => ({
-        nav: {
-            ...style.nav,
-            height: titleBarHeight,
-            backgroundColor: "#e0e0e0"
-        } as ViewStyle
-    }), [pageStyle, titleBarHeight])
-
     return null
 }
 
