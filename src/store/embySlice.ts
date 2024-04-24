@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { listenerMiddleware } from './middleware/Listener';
 import { RootState } from '.';
 import { createAppAsyncThunk } from './type';
@@ -8,12 +8,13 @@ import { EmbyConfig } from '@helper/env';
 import { Emby } from '@api/emby';
 import { View, ViewDetail } from '@model/View';
 import { PlaybackInfo } from '@model/PlaybackInfo';
-import _, { Many } from 'lodash';
+import _, { get, Many } from 'lodash';
 import { Media } from '@model/Media';
 import { Map } from '@model/Map';
 import { Actor } from '@model/Actor';
 import { logger } from '@helper/log';
 import { CollectionOptions } from '@api/view';
+import { DEFAULT_AVATOR_URL } from '@helper/image';
 
 export enum SortType {
     NameAsc,
@@ -31,6 +32,8 @@ interface EmbyState {
         latestMedias?: Media[][]
         actors?: Map<string, Actor>
         albumMedia?: Map<string, Media[]>
+        resume?: Media[]
+        recommendations?: Media[]
     }
     sortType?: SortType
 }
@@ -131,6 +134,20 @@ export const fetchLatestMediaAsync = createAppAsyncThunk<(Media[]|undefined)[]|u
     return medias
 })
 
+export const fetchResumeMediaAsync = createAppAsyncThunk<Media[]|undefined, void>("emby/resume", async (_, config) => {
+    const state = await config.getState()
+    const emby = state.emby.emby
+    const medias = await emby?.getResume?.()
+    return medias
+})
+
+export const searchMediaAsync = createAppAsyncThunk<Media[]|undefined, string>("emby/search", async (keyword, config) => {
+    const state = await config.getState()
+    const emby = state.emby.emby
+    const data = await emby?.getItemWithName?.(keyword)
+    return data?.Items
+})
+
 export interface AlbumQueryParams {
     id: string,
     options?: CollectionOptions
@@ -181,6 +198,25 @@ export const fetchPlaybackAsync = createAppAsyncThunk<PlaybackInfo|undefined, nu
         MaxStreamingBitrate: videoConfig.MaxStreamingBitrate
     })
     return data
+})
+
+export type MarkFavoriteParams = {
+    id: number,
+    favorite: boolean
+}
+
+export const markFavoriteAsync = createAppAsyncThunk<boolean, MarkFavoriteParams>("emby/favorite", async ({id, favorite}, config) => {
+    const state = await config.getState()
+    const emby = state.emby.emby
+    const data = await emby?.markFavorite?.(id, favorite);
+    return data?.IsFavorite ?? false
+})
+
+export const fetchRecommendationsAsync = createAppAsyncThunk<Media[]|undefined, void>("emby/recommendations", async (_, config) => {
+    const state = await config.getState()
+    const emby = state.emby.emby
+    const data = await emby?.searchRecommend?.()
+    return data?.Items
 })
 
 export const slice = createSlice({
@@ -303,6 +339,16 @@ export const slice = createSlice({
                 }
             }
         })
+        .addCase(fetchResumeMediaAsync.fulfilled, (state, action) => {
+            const medias = action.payload
+            if (!medias) return
+            state.source.resume = medias
+        })
+        .addCase(fetchRecommendationsAsync.fulfilled, (state, action) => {
+            const medias = action.payload
+            if (!medias) return
+            state.source.recommendations = medias
+        })
     },
 });
 
@@ -313,8 +359,16 @@ export const {
     updateAlbumSortType,
     updateToNextAlbumSortType
 } = slice.actions;
-export const getActiveEmbySite = (state: RootState) => state.emby;
 
+export const getActiveEmbySite = (state: RootState) => state.emby;
+export const getImageUrl = (id: string | number, options: string) => 
+    (state: RootState) => state.emby.emby?.imageUrl?.(id, options)
+
+export const getEndpoint = (state: RootState) => state.emby.site?.server
+export const getUserId = (state: RootState) => state.emby.site?.user?.User?.Id
+export const getAvatarUrl = createSelector([
+    getEndpoint, getUserId
+], (endpoint, id) => endpoint && id ? `${endpoint.protocol}://${endpoint.host}:${endpoint.port}${endpoint.path}emby/Users/${id}/Images/Primary?height=152&quality=90` : DEFAULT_AVATOR_URL)
 
 listenerMiddleware.startListening({
     actionCreator: loginToSiteAsync.fulfilled,

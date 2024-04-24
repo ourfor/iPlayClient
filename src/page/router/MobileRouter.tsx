@@ -32,11 +32,10 @@ import {
     updateTheme,
 } from '@store/themeSlice';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { Text, useColorScheme } from 'react-native';
-import { Dev } from '@helper/dev';
-import { HeaderRightAction } from '../album/HeaerRightAction';
-import { Device, OSType, isOS } from '@helper/device';
-import { NavBar } from '@view/menu/NavBar';
+import { useColorScheme } from 'react-native';
+import { HeaderRightAction } from '@page/album/HeaerRightAction';
+import { HeaderRightAction as HomeHeaderRightAction } from '@page/home/HeaerRightAction';
+import { Device } from '@helper/device';
 import NativeTitleBar from '@api/native/windows/NativeTitleBar';
 import { logger } from '@helper/log';
 
@@ -61,7 +60,7 @@ const immersiveOptions = (options: any) => (Device.isDesktop ? {
     headerTransparent: true,
     headerStyle: {backgroundColor: 'transparent'},
     headerRight: options.route.name === "album" ? HeaderRightAction : null,
-});
+} as any);
 
 const HomeRouter = () => {
     const options = useAppSelector(selectScreenOptions);
@@ -75,7 +74,7 @@ const HomeRouter = () => {
             <HomeStack.Screen
                 name="home"
                 component={HomePage as any}
-                options={{title: '主页'}}
+                options={{title: '主页', headerRight: () => <HomeHeaderRightAction />}}
             />
             <HomeStack.Screen
                 name="album"
@@ -177,7 +176,7 @@ const MessageRouter = () => {
     const options = useAppSelector(selectScreenOptions);
     return (
         <MessageStack.Navigator
-            initialRouteName={Dev.mode == "development" ? "test" : "message"}
+            initialRouteName={"message"}
             screenOptions={options}>
             <MessageStack.Screen
                 name="message"
@@ -292,7 +291,7 @@ export function Router() {
     return (
         <NavigationContainer
             theme={pageTheme}
-            onStateChange={s => dispatch(switchRoute(getActiveRouteName(s)))}>
+            onStateChange={s => dispatch(switchRoute(getActiveRouteName(s as NavigationState)))}>
             <Tab.Navigator
                 initialRouteName={MenuType.Home}
                 tabBar={() => null}
